@@ -60,4 +60,4 @@ RUN echo "America/Los_Angeles" > /etc/timezone && \
     dpkg-reconfigure -f noninteractive tzdata
 
 # Temporary CMD for interactive access
-CMD ["sleep", "infinity"]
+CMD ["/bin/sh", "-c", "sleep infinity"]
