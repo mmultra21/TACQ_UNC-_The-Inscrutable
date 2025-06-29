@@ -13,7 +13,14 @@ RUN apt-get update && \
     dirmngr \
     gnupg \
     ca-certificates && \
-    rm -rf /var/lib/apt/lists/* # Clean apt cache immediately after install
+    rm -rf /var/lib/apt/lists/*
+
+# Add GitHub CLI repository key and repository
+# This is required to install the 'gh' command
+RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | gpg --dearmor -o /usr/share/keyrings/githubcli-archive-keyring.gpg && \
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | tee /etc/apt/sources.list.d/github-cli.list && \
+    apt-get update && \
+    rm -rf /var/lib/apt/lists/*
 
 # Manually add the deadsnakes PPA key(s) and repository definition
 # Add BOTH keys that apt is complaining about, to be safe.
@@ -25,19 +32,20 @@ RUN mkdir -p /etc/apt/keyrings && \
     gpg --export BA6932366A755776 > /etc/apt/trusted.gpg.d/deadsnakes-secondary.gpg && \
     echo "deb http://ppa.launchpadcontent.net/deadsnakes/ppa/ubuntu jammy main" > /etc/apt/sources.list.d/deadsnakes.list && \
     apt-get update && \
-    rm -rf /var/lib/apt/lists/* # Clean apt cache again
+    rm -rf /var/lib/apt/lists/*
 
-# Install general development tools and libraries
+# Install general development tools and libraries, INCLUDING GITHUB CLI ('gh')
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     build-essential \
     git \
     wget \
     vim \
+    gh \
     libsm6 \
     libxext6 \
     libxrender-dev && \
-    rm -rf /var/lib/apt/lists/* # The '&& \' should be at the end of the line before the next command
+    rm -rf /var/lib/apt/lists/*
 
 # Install Python 3.12 and its venv/dev packages from the PPA
 RUN apt-get update && \
@@ -60,4 +68,4 @@ RUN echo "America/Los_Angeles" > /etc/timezone && \
     dpkg-reconfigure -f noninteractive tzdata
 
 # Temporary CMD for interactive access
-CMD ["/bin/sh", "-c", "sleep infinity"]
+CMD ["sleep", "infinity"]
