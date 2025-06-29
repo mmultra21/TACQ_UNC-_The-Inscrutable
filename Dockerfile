@@ -39,6 +39,7 @@ RUN apt-get update && \
     wget \
     vim \
     gh \
+    nano \
     libsm6 \
     libxext6 \
     libxrender-dev && \
@@ -59,16 +60,12 @@ RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python${PYTH
 RUN python${PYTHON_VERSION} -m ensurepip --upgrade && \
     python${PYTHON_VERSION} -m pip install --upgrade pip
 
-# --- NEW INSTALLATION STEPS FOR TRANSFORMERS AND PYTORCH ---
-# Install PyTorch with CUDA support (for GPU)
-# The URL for PyTorch wheels needs to match your CUDA version on the L40.
-# RunPod typically manages CUDA, so you often just need the correct wheel.
-# For Ubuntu 22.04 with a modern GPU, this is a common command:
+# --- NEW INSTALLATION STEP FOR PYTORCH AND TRANSFORMERS ---
+# Install PyTorch with CUDA support for CUDA 12.1 (common on L40)
+# Then install the transformers library with PyTorch support
 RUN pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121 && \
-    # Install the transformers library with PyTorch support
     pip install "transformers[torch]" && \
-    # Install huggingface_hub if not pulled as a dependency of transformers[torch]
-    pip install huggingface_hub
+    pip install huggingface_hub # Ensure huggingface_hub is installed, though it's often a dependency of transformers
 
 # Optional: Set a specific timezone if your application needs it
 RUN echo "America/Los_Angeles" > /etc/timezone && \
