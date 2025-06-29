@@ -2,10 +2,11 @@ FROM ubuntu:22.04
 
 ARG PYTHON_VERSION=3.12
 
-# Install software-properties-common and dirmngr (needed for gpg keyservers)
+# Install software-properties-common, curl, dirmngr, and gnupg
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     software-properties-common \
+    curl \  # <--- ADD CURL HERE
     dirmngr \
     gnupg
 
@@ -15,12 +16,11 @@ RUN curl -fsSL https://ppa.launchpadcontent.net/deadsnakes/ppa/ubuntu/dists/jamm
     echo "deb http://ppa.launchpadcontent.net/deadsnakes/ppa/ubuntu jammy main" > /etc/apt/sources.list.d/deadsnakes.list && \
     apt-get update
 
-# Install general development tools and libraries
+# Install general development tools and libraries (git, wget, vim etc. are already listed here, this is fine)
 RUN apt-get install -y --no-install-recommends \
     build-essential \
     git \
     wget \
-    curl \
     vim \
     libsm6 \
     libxext6 \
