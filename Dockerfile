@@ -16,15 +16,12 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 # Add GitHub CLI repository key and repository
-# This is required to install the 'gh' command
 RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | gpg --dearmor -o /usr/share/keyrings/githubcli-archive-keyring.gpg && \
     echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | tee /etc/apt/sources.list.d/github-cli.list && \
     apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 # Manually add the deadsnakes PPA key(s) and repository definition
-# Add BOTH keys that apt is complaining about, to be safe.
-# Also ensure permissions on the keyring directory
 RUN mkdir -p /etc/apt/keyrings && \
     chmod 0755 /etc/apt/keyrings && \
     gpg --keyserver keyserver.ubuntu.com --recv-keys F23C5A6CF475977595C89F51BA6932366A755776 BA6932366A755776 && \
@@ -34,7 +31,7 @@ RUN mkdir -p /etc/apt/keyrings && \
     apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
-# Install general development tools and libraries, INCLUDING GITHUB CLI ('gh')
+# Install general development tools and libraries
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     build-essential \
@@ -61,6 +58,17 @@ RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python${PYTH
 # Install pip for the newly installed Python 3.12 and upgrade pip
 RUN python${PYTHON_VERSION} -m ensurepip --upgrade && \
     python${PYTHON_VERSION} -m pip install --upgrade pip
+
+# --- NEW INSTALLATION STEPS FOR TRANSFORMERS AND PYTORCH ---
+# Install PyTorch with CUDA support (for GPU)
+# The URL for PyTorch wheels needs to match your CUDA version on the L40.
+# RunPod typically manages CUDA, so you often just need the correct wheel.
+# For Ubuntu 22.04 with a modern GPU, this is a common command:
+RUN pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121 && \
+    # Install the transformers library with PyTorch support
+    pip install "transformers[torch]" && \
+    # Install huggingface_hub if not pulled as a dependency of transformers[torch]
+    pip install huggingface_hub
 
 # Optional: Set a specific timezone if your application needs it
 RUN echo "America/Los_Angeles" > /etc/timezone && \
