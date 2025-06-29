@@ -6,7 +6,7 @@ ARG PYTHON_VERSION=3.12
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     software-properties-common \
-    curl \  # <--- ADD CURL HERE
+    curl \
     dirmngr \
     gnupg
 
@@ -16,7 +16,7 @@ RUN curl -fsSL https://ppa.launchpadcontent.net/deadsnakes/ppa/ubuntu/dists/jamm
     echo "deb http://ppa.launchpadcontent.net/deadsnakes/ppa/ubuntu jammy main" > /etc/apt/sources.list.d/deadsnakes.list && \
     apt-get update
 
-# Install general development tools and libraries (git, wget, vim etc. are already listed here, this is fine)
+# Install general development tools and libraries
 RUN apt-get install -y --no-install-recommends \
     build-essential \
     git \
