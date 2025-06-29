@@ -2,12 +2,17 @@ FROM ubuntu:22.04
 
 ARG PYTHON_VERSION=3.12
 
-# Install software-properties-common first, as it provides apt-add-repository
+# Install software-properties-common and dirmngr (needed for gpg keyservers)
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends software-properties-common
+    apt-get install -y --no-install-recommends \
+    software-properties-common \
+    dirmngr \
+    gnupg
 
-# Now, add the deadsnakes PPA and update apt again
-RUN apt-add-repository -y ppa:deadsnakes/ppa && \
+# Manually add the deadsnakes PPA key and repository definition
+# This is a more robust way to handle PPA keys in Dockerfiles
+RUN curl -fsSL https://ppa.launchpadcontent.net/deadsnakes/ppa/ubuntu/dists/jammy/InRelease.gpg | gpg --dearmor -o /etc/apt/trusted.gpg.d/deadsnakes.gpg && \
+    echo "deb http://ppa.launchpadcontent.net/deadsnakes/ppa/ubuntu jammy main" > /etc/apt/sources.list.d/deadsnakes.list && \
     apt-get update
 
 # Install general development tools and libraries
