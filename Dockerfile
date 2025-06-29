@@ -12,8 +12,8 @@ RUN apt-get update && \
     curl \
     dirmngr \
     gnupg \
-    ca-certificates \
-    && rm -rf /var/lib/apt/lists/* # Clean apt cache immediately after install
+    ca-certificates && \
+    rm -rf /var/lib/apt/lists/* # Clean apt cache immediately after install
 
 # Manually add the deadsnakes PPA key(s) and repository definition
 # Add BOTH keys that apt is complaining about, to be safe.
@@ -24,10 +24,11 @@ RUN mkdir -p /etc/apt/keyrings && \
     gpg --export F23C5A6CF475977595C89F51BA6932366A755776 > /etc/apt/trusted.gpg.d/deadsnakes-primary.gpg && \
     gpg --export BA6932366A755776 > /etc/apt/trusted.gpg.d/deadsnakes-secondary.gpg && \
     echo "deb http://ppa.launchpadcontent.net/deadsnakes/ppa/ubuntu jammy main" > /etc/apt/sources.list.d/deadsnakes.list && \
-    apt-get update && rm -rf /var/lib/apt/lists/* # Clean apt cache again
+    apt-get update && \
+    rm -rf /var/lib/apt/lists/* # Clean apt cache again
 
 # Install general development tools and libraries
-RUN apt-get update && \ # apt update again for this step, as the cache was cleaned
+RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     build-essential \
     git \
@@ -35,16 +36,16 @@ RUN apt-get update && \ # apt update again for this step, as the cache was clean
     vim \
     libsm6 \
     libxext6 \
-    libxrender-dev \
-    && rm -rf /var/lib/apt/lists/*
+    libxrender-dev && \
+    rm -rf /var/lib/apt/lists/* # The '&& \' should be at the end of the line before the next command
 
 # Install Python 3.12 and its venv/dev packages from the PPA
-RUN apt-get update && \ # apt update again
+RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     python${PYTHON_VERSION} \
     python${PYTHON_VERSION}-dev \
-    python${PYTHON_VERSION}-venv \
-    && rm -rf /var/lib/apt/lists/*
+    python${PYTHON_VERSION}-venv && \
+    rm -rf /var/lib/apt/lists/*
 
 # Update alternatives to ensure python3 points to 3.12
 RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python${PYTHON_VERSION} 1
