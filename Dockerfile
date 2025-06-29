@@ -8,11 +8,13 @@ RUN apt-get update && \
     software-properties-common \
     curl \
     dirmngr \
-    gnupg
+    gnupg \
+    ca-certificates # Add ca-certificates for reliable HTTPS connections
 
 # Manually add the deadsnakes PPA key and repository definition
-# This is a more robust way to handle PPA keys in Dockerfiles
-RUN curl -fsSL https://ppa.launchpadcontent.net/deadsnakes/ppa/ubuntu/dists/jammy/InRelease.gpg | gpg --dearmor -o /etc/apt/trusted.gpg.d/deadsnakes.gpg && \
+# Fetch the key from a keyserver, which is often more stable than direct file links
+RUN gpg --keyserver keyserver.ubuntu.com --recv-keys F23C5A6CF475977595C89F51BA6932366A755776 && \
+    gpg --export F23C5A6CF475977595C89F51BA6932366A755776 > /etc/apt/trusted.gpg.d/deadsnakes.gpg && \
     echo "deb http://ppa.launchpadcontent.net/deadsnakes/ppa/ubuntu jammy main" > /etc/apt/sources.list.d/deadsnakes.list && \
     apt-get update
 
