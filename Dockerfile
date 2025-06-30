@@ -60,13 +60,12 @@ RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python${PYTH
 RUN python${PYTHON_VERSION} -m ensurepip --upgrade && \
     python${PYTHON_VERSION} -m pip install --upgrade pip
 
-# --- NEW INSTALLATION STEP FOR PYTORCH AND TRANSFORMERS ---
-# 1. Install PyTorch core (torch, torchvision, torchaudio) first and explicitly.
-# 2. Install transformers without the [torch] extra, as torch is already handled.
-# 3. Install huggingface_hub.
-RUN pip install torch==2.5.1 torchvision==0.20.1 torchaudio==2.5.1 --index-url https://download.pytorch.org/whl/cu121 && \
+# --- REVISED INSTALLATION STEP FOR PYTORCH AND TRANSFORMERS ---
+# 1. Install huggingface_hub and transformers first.
+# 2. Then, force install the EXACT PyTorch versions, overriding any implicit installs.
+RUN pip install huggingface_hub && \
     pip install transformers && \
-    pip install huggingface_hub
+    pip install torch==2.5.1 torchvision==0.20.1 torchaudio==2.5.1 --index-url https://download.pytorch.org/whl/cu121
 
 # Optional: Set a specific timezone if your application needs it
 RUN echo "America/Los_Angeles" > /etc/timezone && \
