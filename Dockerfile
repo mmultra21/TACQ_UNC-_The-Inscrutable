@@ -60,12 +60,18 @@ RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python${PYTH
 RUN python${PYTHON_VERSION} -m ensurepip --upgrade && \
     python${PYTHON_VERSION} -m pip install --upgrade pip
 
-# --- REVISED, MORE AGGRESSIVE INSTALLATION FOR PYTORCH AND TRANSFORMERS ---
-# Clear pip cache, then force reinstall PyTorch components, then install transformers
-RUN pip cache purge && \
-    pip install --no-cache-dir \
+# --- DIAGNOSTIC AND AGGRESSIVE INSTALLATION FOR PYTORCH AND TRANSFORMERS ---
+# Check pip version (temporary diagnostic)
+RUN python3 -m pip --version
+
+# Clear pip cache entirely to avoid conflicts from previous attempts
+RUN python3 -m pip cache purge && \
+    # Install PyTorch components first and absolutely.
+    # Use --force-reinstall to ensure no previous versions linger, and --no-cache-dir
+    python3 -m pip install --no-cache-dir --force-reinstall \
     torch==2.5.1 torchvision==0.20.1 torchaudio==2.5.1 --index-url https://download.pytorch.org/whl/cu121 && \
-    pip install --no-cache-dir \
+    # Then install transformers and huggingface_hub, allowing them to use the freshly installed torch
+    python3 -m pip install --no-cache-dir \
     transformers huggingface_hub
 
 # Optional: Set a specific timezone if your application needs it
