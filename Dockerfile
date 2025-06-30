@@ -65,7 +65,7 @@ RUN python${PYTHON_VERSION} -m ensurepip --upgrade && \
 # 2. Install transformers without the [torch] extra, as torch is already handled.
 # 3. Install huggingface_hub.
 RUN pip install torch==2.5.1 torchvision==0.20.1 torchaudio==2.5.1 --index-url https://download.pytorch.org/whl/cu121 && \
-    pip install transformers && \ # Install transformers without [torch] extra now
+    pip install transformers && \
     pip install huggingface_hub
 
 # Optional: Set a specific timezone if your application needs it
