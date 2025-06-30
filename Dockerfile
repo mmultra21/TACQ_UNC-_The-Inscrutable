@@ -61,11 +61,11 @@ RUN python${PYTHON_VERSION} -m ensurepip --upgrade && \
     python${PYTHON_VERSION} -m pip install --upgrade pip
 
 # --- NEW INSTALLATION STEP FOR PYTORCH AND TRANSFORMERS ---
-# Install PyTorch with CUDA support for CUDA 12.1 (common on L40)
-# Then install the transformers library with PyTorch support
-RUN pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121 && \
+# Install PyTorch, torchvision, and torchaudio TOGETHER with explicit versions for compatibility.
+# These versions are compatible for CUDA 12.1: torch==2.5.1, torchvision==0.20.1, torchaudio==2.5.1
+RUN pip install torch==2.5.1 torchvision==0.20.1 torchaudio==2.5.1 --index-url https://download.pytorch.org/whl/cu121 && \
     pip install "transformers[torch]" && \
-    pip install huggingface_hub # Ensure huggingface_hub is installed, though it's often a dependency of transformers
+    pip install huggingface_hub
 
 # Optional: Set a specific timezone if your application needs it
 RUN echo "America/Los_Angeles" > /etc/timezone && \
