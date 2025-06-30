@@ -61,10 +61,11 @@ RUN python${PYTHON_VERSION} -m ensurepip --upgrade && \
     python${PYTHON_VERSION} -m pip install --upgrade pip
 
 # --- NEW INSTALLATION STEP FOR PYTORCH AND TRANSFORMERS ---
-# Install PyTorch, torchvision, and torchaudio TOGETHER with explicit versions for compatibility.
-# These versions are compatible for CUDA 12.1: torch==2.5.1, torchvision==0.20.1, torchaudio==2.5.1
+# 1. Install PyTorch core (torch, torchvision, torchaudio) first and explicitly.
+# 2. Install transformers without the [torch] extra, as torch is already handled.
+# 3. Install huggingface_hub.
 RUN pip install torch==2.5.1 torchvision==0.20.1 torchaudio==2.5.1 --index-url https://download.pytorch.org/whl/cu121 && \
-    pip install "transformers[torch]" && \
+    pip install transformers && \ # Install transformers without [torch] extra now
     pip install huggingface_hub
 
 # Optional: Set a specific timezone if your application needs it
