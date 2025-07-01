@@ -1,53 +1,31 @@
-FROM ubuntu:22.04
+# Use an official NVIDIA CUDA base image
+# This image comes with CUDA Toolkit, cuDNN, and nvcc pre-installed and configured.
+# We'll use a 'devel' tag for development tools (like nvcc).
+# Choose a CUDA version compatible with your PyTorch (e.g., cu12.1 or cu12.4).
+# Your torch version is 2.5.1+cu124, so cuda:12.4.0-devel-ubuntu22.04 is ideal.
+FROM nvidia/cuda:12.4.0-devel-ubuntu22.04
 
 ARG PYTHON_VERSION=3.12
 
 # Set DEBIAN_FRONTEND to noninteractive for unattended installations
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Install software-properties-common, curl, dirmngr, gnupg, and ca-certificates
+# Update apt cache and install basic necessities, but a lot less now!
+# The NVIDIA image already has build-essential, git, wget, curl.
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     software-properties-common \
-    curl \
-    dirmngr \
-    gnupg \
-    ca-certificates && \
-    rm -rf /var/lib/apt/lists/*
-
-# Add GitHub CLI repository key and repository
-RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | gpg --dearmor -o /usr/share/keyrings/githubcli-archive-keyring.gpg && \
-    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | tee /etc/apt/sources.list.d/github-cli.list && \
-    apt-get update && \
-    rm -rf /var/lib/apt/lists/*
-
-# Manually add the deadsnakes PPA key(s) and repository definition
-RUN mkdir -p /etc/apt/keyrings && \
-    chmod 0755 /etc/apt/keyrings && \
-    gpg --keyserver keyserver.ubuntu.com --recv-keys F23C5A6CF475977595C89F51BA6932366A755776 BA6932366A755776 && \
-    gpg --export F23C5A6CF475977595C89F51BA6932366A755776 > /etc/apt/trusted.gpg.d/deadsnakes-primary.gpg && \
-    gpg --export BA6932366A755776 > /etc/apt/trusted.gpg.d/deadsnakes-secondary.gpg && \
-    echo "deb http://ppa.launchpadcontent.net/deadsnakes/ppa/ubuntu jammy main" | tee /etc/apt/sources.list.d/deadsnakes.list && \
-    apt-get update && \
-    rm -rf /var/lib/apt/lists/*
-
-# Install general development tools and libraries, INCLUDING NVIDIA CUDA TOOLKIT
-# Add nvidia-cuda-toolkit here
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-    build-essential \
-    git \
-    wget \
     vim \
-    gh \
     nano \
     libsm6 \
     libxext6 \
     libxrender-dev \
-    nvidia-cuda-toolkit && \
-    rm -rf /var/lib/apt/lists/*
+    # The NVIDIA image should already have gpg, dirmngr, ca-certificates, gh (check if gh is needed)
+    # If gh is still needed and not in base, add: gh
+    && rm -rf /var/lib/apt/lists/*
 
-# Install Python 3.12 and its venv/dev packages from the PPA
+# The NVIDIA image usually comes with Python, but let's re-ensure our 3.12 from deadsnakes
+# This part is still needed to get Python 3.12 from the PPA.
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     python${PYTHON_VERSION} \
@@ -62,10 +40,14 @@ RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python${PYTH
 RUN python${PYTHON_VERSION} -m ensurepip --upgrade && \
     python${PYTHON_VERSION} -m pip install --upgrade pip
 
-# Final aggressive installation for PyTorch and Transformers
+# --- PYTORCH & TRANSFORMERS (SIMPLIFIED!) ---
+# PyTorch is installed to match the CUDA Toolkit provided by the base image.
+# We no longer need to manually manage specific CUDA versions or --index-url.
+# The `torch` version `2.5.1` is compatible with CUDA 12.4.
+# Use --extra-index-url https://download.pytorch.org/whl/cu124 to get the specific 12.4 build of torch
 RUN python3 -m pip cache purge && \
     python3 -m pip install --no-cache-dir --force-reinstall \
-    torch==2.5.1 torchvision==0.20.1 torchaudio==2.5.1 --index-url https://download.pytorch.org/whl/cu121 && \
+    torch==2.5.1 torchvision==0.20.1 torchaudio==2.5.1 --extra-index-url https://download.pytorch.org/whl/cu124 && \
     python3 -m pip install --no-cache-dir \
     transformers huggingface_hub
 
