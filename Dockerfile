@@ -27,11 +27,12 @@ RUN mkdir -p /etc/apt/keyrings && \
     gpg --keyserver keyserver.ubuntu.com --recv-keys F23C5A6CF475977595C89F51BA6932366A755776 BA6932366A755776 && \
     gpg --export F23C5A6CF475977595C89F51BA6932366A755776 > /etc/apt/trusted.gpg.d/deadsnakes-primary.gpg && \
     gpg --export BA6932366A755776 > /etc/apt/trusted.gpg.d/deadsnakes-secondary.gpg && \
-    echo "deb http://ppa.launchpadcontent.net/deadsnakes/ppa/ubuntu jammy main" > /etc/apt/sources.list.d/deadsnakes.list && \
+    echo "deb http://ppa.launchpadcontent.net/deadsnakes/ppa/ubuntu jammy main" | tee /etc/apt/sources.list.d/deadsnakes.list && \
     apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
-# Install general development tools and libraries
+# Install general development tools and libraries, INCLUDING NVIDIA CUDA TOOLKIT
+# Add nvidia-cuda-toolkit here
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     build-essential \
@@ -42,7 +43,8 @@ RUN apt-get update && \
     nano \
     libsm6 \
     libxext6 \
-    libxrender-dev && \
+    libxrender-dev \
+    nvidia-cuda-toolkit && \
     rm -rf /var/lib/apt/lists/*
 
 # Install Python 3.12 and its venv/dev packages from the PPA
@@ -60,17 +62,10 @@ RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python${PYTH
 RUN python${PYTHON_VERSION} -m ensurepip --upgrade && \
     python${PYTHON_VERSION} -m pip install --upgrade pip
 
-# --- DIAGNOSTIC AND AGGRESSIVE INSTALLATION FOR PYTORCH AND TRANSFORMERS ---
-# Check pip version (temporary diagnostic)
-RUN python3 -m pip --version
-
-# Clear pip cache entirely to avoid conflicts from previous attempts
+# Final aggressive installation for PyTorch and Transformers
 RUN python3 -m pip cache purge && \
-    # Install PyTorch components first and absolutely.
-    # Use --force-reinstall to ensure no previous versions linger, and --no-cache-dir
     python3 -m pip install --no-cache-dir --force-reinstall \
     torch==2.5.1 torchvision==0.20.1 torchaudio==2.5.1 --index-url https://download.pytorch.org/whl/cu121 && \
-    # Then install transformers and huggingface_hub, allowing them to use the freshly installed torch
     python3 -m pip install --no-cache-dir \
     transformers huggingface_hub
 
